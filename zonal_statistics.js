@@ -41,12 +41,12 @@ var mTPIResults = mTPI.reduceRegions({
   scale: 30
 });
 
-// Importa la colección de imágenes Sentinel-2 y filtra por fechas y ubicación de interés
+// Importa sentinel-2 y filtra por fechas y polygons
 var sentinelCollection = ee.ImageCollection('COPERNICUS/S2')
   .filterDate('2020-12-01', '2020-12-31') // Define el rango de fechas de interés
   .filterBounds(polygons); // Define la ubicación de interés (polígonos)
 
-// Calcula el NDVI y NDWI de Sentinel
+// Calcula el NDVI y NDWI de sentinel
 function calculateNDVI(image) {
   var ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI');
   return image.addBands(ndvi);
@@ -66,12 +66,12 @@ var sentinelWithNDVI = sentinelCollection.map(calculateNDVI);
 var sentinelWithNDWI = sentinelCollection.map(calculateNDWI);
 var sentinelWithBand5 = sentinelCollection.map(addBand5);
 
-// Calcula el valor promedio para cada polígono
+// Calcula el valor promedio para cada elemento de polygons
 var meanNDVI = sentinelWithNDVI.select('NDVI').reduce(ee.Reducer.mean());
 var meanNDWI = sentinelWithNDWI.select('NDWI').reduce(ee.Reducer.mean());
 var meanBand5 = sentinelWithBand5.select('B5').reduce(ee.Reducer.mean());
 
-// Exporta a un archivo CSV en Google Drive
+// Exporta a drive un csv
 var ndviByPolygon = meanNDVI.reduceRegions({
   collection: polygons,
   reducer: ee.Reducer.mean(),
